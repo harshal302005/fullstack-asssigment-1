@@ -1,0 +1,39 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import DataTable from 'react-data-table-component';
+
+const TeachersTable = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost/intern_task_backend/public/api/teachers', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setData(res.data);
+      } catch (err) {
+        alert('Error fetching data');
+      }
+    };
+    fetchData();
+  }, []);
+
+  const columns = [
+    { name: 'ID', selector: row => row.id, sortable: true },
+    { name: 'User ID', selector: row => row.user_id, sortable: true },
+    { name: 'University', selector: row => row.university_name, sortable: true },
+    { name: 'Gender', selector: row => row.gender, sortable: true },
+    { name: 'Year Joined', selector: row => row.year_joined, sortable: true },
+  ];
+
+  return (
+    <div>
+      <h2>Teachers Table</h2>
+      <DataTable columns={columns} data={data} pagination theme="solarized" />
+    </div>
+  );
+};
+
+export default TeachersTable;
