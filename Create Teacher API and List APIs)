@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Controllers\Api;
+
+use App\Controllers\BaseController;
+use App\Models\UserModel;
+use App\Models\TeacherModel;
+use CodeIgniter\API\ResponseTrait;
+
+class Teacher extends BaseController
+{
+    use ResponseTrait;
+
+    public function create()
+    {
+        $data = $this->request->getJSON(true);
+        $userModel = new UserModel();
+        $teacherModel = new TeacherModel();
+
+        // Validation (simplified)
+        if (!$data['email'] || !$data['first_name'] || !$data['last_name'] || !$data['password'] ||
+            !$data['university_name'] || !$data['gender'] || !$data['year_joined']) {
+            return $this->fail('Missing fields', 400);
+        }
+
+        // Insert into auth_user
+        $userData = [
+            'email' => $data['email'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'password' => password_hash($data['password'], PASSWORD_DEFAULT)
+        ];
+        $userId = $userModel->insert($userData);
+        if (!$userId) {
+            return $this->fail('User creation failed', 500);
+        }
+
+        // Insert into teachers
+        $teacherData = [
+            'user_id' => $userId,
+            'university_name' => $data['university_name'],
+            'gender' => $data['gender'],
+            'year_joined' => $data['year_joined']
+        ];
+        if (!$teacherModel->insert($teacherData)) {
+            // Rollback if needed (simplified, no transaction here)
+            $userModel->delete($userId);
+            return $this->fail('Teacher creation failed', 500);
+        }
+
+        return $this->respond(['msg' => 'Created successfully'], 201);
+    }
+
+    public function listUsers()
+    {
+        $userModel = new UserModel();
+        return $this->respond($userModel->findAll());
+    }
+
+    public function listTeachers()
+    {
+        $teacherModel = new TeacherModel();
+        return $this->respond($teacherModel->findAll());
+    }
+}
