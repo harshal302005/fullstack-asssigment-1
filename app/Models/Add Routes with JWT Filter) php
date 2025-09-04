@@ -1,0 +1,7 @@
+$routes->group('api', function ($routes) {
+    $routes->post('register', 'Api\Auth::register');
+    $routes->post('login', 'Api\Auth::login');
+    $routes->post('create-teacher', 'Api\Teacher::create', ['filter' => 'jwt']);
+    $routes->get('users', 'Api\Teacher::listUsers', ['filter' => 'jwt']);
+    $routes->get('teachers', 'Api\Teacher::listTeachers', ['filter' => 'jwt']);
+});
